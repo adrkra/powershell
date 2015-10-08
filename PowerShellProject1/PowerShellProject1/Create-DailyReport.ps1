@@ -79,123 +79,115 @@ function Check-ServiceReport
 
 function Check-ServerStatus ($computers)
 {
-  foreach($computer in $computers)
+	foreach($computer in $computers)
 	{	
-Write-Host $computer
-$serverName = Invoke-Command -Computername $computer -ScriptBlock {hostname} -Credential $credential
-$proc = Get-WmiObject -computername $computer win32_processor | Measure-Object -property LoadPercentage -Average | Select Average 
-$procload = $proc.Average
-$mem = Get-WmiObject -Class win32_operatingsystem -computername $computer | Select-Object @{Name = "MemoryUsage"; Expression = {“{0:N2}” -f ((($_.TotalVisibleMemorySize - $_.FreePhysicalMemory)*100)/ $_.TotalVisibleMemorySize) }} 
-$memload = $mem.MemoryUsage
-$ping = gwmi win32_pingstatus -f "Address = '$computer'" 
- if($ping.statuscode -eq 0) 
- { 
-    $wmi = Get-WmiObject -ComputerName $computer -Query "SELECT LastBootUpTime FROM Win32_OperatingSystem"            
-    $boottime = $wmi.ConvertToDateTime($wmi.LastBootUpTime) 
-    $uptime = (Get-Date) - $boottime
-    $DisplayUptime = "" + $Uptime.Days + "d " + $Uptime.Hours + "h " + $Uptime.Minutes + "m" 
-
-    Write-Host $DisplayUptime
- } 
- else 
- { 
-    $boottime = "offline"
-    $DisplayUptime = ''
- } 
-$TcpConnestions = Invoke-Command -Computername $computer -ScriptBlock {(netstat -an | ? {($_ -match '^  TCP')}).Count} -Credential $credential
-$UdpConnestions = Invoke-Command -Computername $computer -ScriptBlock {(netstat -an | ? {($_ -match '^  UDP')}).Count} -Credential $credential
-$TotalConnections = $TcpConnestions + $UdpConnestions
-
-$connectionColor = $GreenColor
-$memColor = $normalColor
-$procColor = $normalColor
-
-if($TotalConnections -gt $MaxConnections)
-{
-$connectionColor = $redColor 
-}
-if($procload -ge $percentWarningelse)       
-{ 
-$procColor = $orangeColor  
-}
-Write-Host Uzycie pamieci to $memload
-if($memload > $percentWarningelse)       
-{ 
-$memColor = $orangeColor
-}
-$dataRow = "
-				        <tr bgcolor= 'GainsBoro'font face='tahoma'>
-				        <td width='10%'  bgcolor= 'GainsBoro' align='center'><b>$computer</b></td>
-				        <td width='10%'  bgcolor= 'GainsBoro' align='center'><b>$serverName</b></td>
-                        <td width='10%'  bgcolor= 'GainsBoro' align='center'><b>$boottime</b></td>
-                        <td width='10%'  bgcolor= 'GainsBoro' align='center'><b>$DisplayUptime</b></td>
-				        <td width='5%'  bgcolor= '$procColor' align='center'><b>$procload</b></td>
-                        <td width='5%'  bgcolor= '$memColor' align='center'><b>$memload</b></td>
-                        <td width='5%'  bgcolor= 'GainsBoro' align='center'><b>$TcpConnestions</b></td>
-                        <td width='5%'  bgcolor= 'GainsBoro' align='center'><b>$UdpConnestions</b></td>
-                        <td width='5%'  bgcolor= '$connectionColor' align='center'><b>$TotalConnections</b></td>
-				        </tr>"
-				Add-Content $report $dataRow			
+		Write-Host $computer
+		$serverName = Invoke-Command -Computername $computer -ScriptBlock {hostname} -Credential $credential
+		$proc = Get-WmiObject -computername $computer win32_processor | Measure-Object -property LoadPercentage -Average | Select Average 
+		$procload = $proc.Average
+		$mem = Get-WmiObject -Class win32_operatingsystem -computername $computer | Select-Object @{Name = "MemoryUsage"; Expression = {“{0:N2}” -f ((($_.TotalVisibleMemorySize - $_.FreePhysicalMemory)*100)/ $_.TotalVisibleMemorySize) }} 
+		$memload = $mem.MemoryUsage
+		$ping = gwmi win32_pingstatus -f "Address = '$computer'" 
+		if($ping.statuscode -eq 0) 
+		{ 
+			$wmi = Get-WmiObject -ComputerName $computer -Query "SELECT LastBootUpTime FROM Win32_OperatingSystem"            
+			$boottime = $wmi.ConvertToDateTime($wmi.LastBootUpTime) 
+			$uptime = (Get-Date) - $boottime
+			$DisplayUptime = "" + $Uptime.Days + "d " + $Uptime.Hours + "h " + $Uptime.Minutes + "m" 
+			Write-Host $DisplayUptime
+		} 
+		else 
+		{ 
+			$boottime = "offline"
+			$DisplayUptime = ''
+		} 
+		$TcpConnestions = Invoke-Command -Computername $computer -ScriptBlock {(netstat -an | ? {($_ -match '^  TCP')}).Count} -Credential $credential
+		$UdpConnestions = Invoke-Command -Computername $computer -ScriptBlock {(netstat -an | ? {($_ -match '^  UDP')}).Count} -Credential $credential
+		$TotalConnections = $TcpConnestions + $UdpConnestions
+		$connectionColor = $GreenColor
+		$memColor = $normalColor
+		$procColor = $normalColor
+		if($TotalConnections -gt $MaxConnections)
+		{
+			$connectionColor = $redColor 
+		}
+		if($procload -ge $percentWarningelse)       
+		{ 
+			$procColor = $orangeColor  
+		}
+		Write-Host Uzycie pamieci to $memload
+		if($memload > $percentWarningelse)       
+		{ 
+			$memColor = $orangeColor
+		}
+		$dataRow = "
+		<tr bgcolor= 'GainsBoro'font face='tahoma'>
+		<td width='10%'  bgcolor= 'GainsBoro' align='center'><b>$computer</b></td>
+		<td width='10%'  bgcolor= 'GainsBoro' align='center'><b>$serverName</b></td>
+        <td width='10%'  bgcolor= 'GainsBoro' align='center'><b>$boottime</b></td>
+        <td width='10%'  bgcolor= 'GainsBoro' align='center'><b>$DisplayUptime</b></td>
+		<td width='5%'  bgcolor= '$procColor' align='center'><b>$procload</b></td>
+        <td width='5%'  bgcolor= '$memColor' align='center'><b>$memload</b></td>
+        <td width='5%'  bgcolor= 'GainsBoro' align='center'><b>$TcpConnestions</b></td>
+        <td width='5%'  bgcolor= 'GainsBoro' align='center'><b>$UdpConnestions</b></td>
+        <td width='5%'  bgcolor= '$connectionColor' align='center'><b>$TotalConnections</b></td>
+		</tr>"
+		Add-Content $report $dataRow			
 	}
 }
 
 function Check-ServiceStatus ($computers, $serviceslist) 
 { 
-foreach ($machineName in $computers)  
-		{  
-        if ($machineName -eq '10.170.10.196')
+	foreach ($machineName in $computers)  
+	{  
+		if ($machineName -eq '10.170.10.196')
         {
-        $serviceslist = $serviceslist196
+			$serviceslist = $serviceslist196
         }
-        if ($machineName -eq '10.170.10.197')
+		if ($machineName -eq '10.170.10.197')
         {
-        $serviceslist = $serviceslist197
+			$serviceslist = $serviceslist197
         }
 		foreach ($service in $serviceslist) 
 		{ 
-write-host $service $machineName
-$serviceStatus = Get-Process $service  -ComputerName $machineName | Select-Object -First 1
-$svcName = $serviceStatus.name  
-$ping = gwmi win32_pingstatus -f "Address = '$machineName'" 
- if($ping.statuscode -eq 0) {
-    $test = 'ok'
- } 
- else {
-$test = 'notok'
- }
-
-			if ($serviceStatus -and $test -eq 'ok')
-			{ 
-                
-                $mem = [Math]::Round($serviceStatus.PrivateMemorySize64 / 1mb, 2) 
-                if($mem -gt 2000)
-                {
-                    $memColor = $orangeColor
-                }
-                else 
-                {
-                    $memColor = "Aquamarine"
-                }
+			write-host $service $machineName
+			$serviceStatus = Get-Process $service  -ComputerName $machineName | Select-Object -First 1
+			$svcName = $serviceStatus.name  
+			$ping = gwmi win32_pingstatus -f "Address = '$machineName'" 
+			if($ping.statuscode -eq 0) {
+			$test = 'ok'
+		} 
+		else
+		{
+			$test = 'notok'
+		}
+		if ($serviceStatus -and $test -eq 'ok')
+		{ 
+			$mem = [Math]::Round($serviceStatus.PrivateMemorySize64 / 1mb, 2) 
+			if($mem -gt 2000)
+			{
+				$memColor = $orangeColor
+			}
+			else 
+			{
+				$memColor = "Aquamarine"
+			}
 				Write-Host $machineName `t $serviceStatus.name `t $serviceStatus.status -ForegroundColor Green  
-				
 				$svcState = $serviceStatus.status  
-                $processTime = gwmi win32_process -computername $machineName| ? { $_.name -eq $service+'.exe' } | % { $_.ConvertToDateTime( $_.CreationDate )}     
-                
-                    $Processuptime = (Get-Date) - $processTime
-    $DisplayprocessTime = "" + $Processuptime.Days + "d " + $Processuptime.Hours + "h " + $Processuptime.Minutes + "m" 
-
-    Write-Host Proces $service działa od $DisplayUptime
-                
-                Add-Content $report "<tr>"  
+				$processTime = gwmi win32_process -computername $machineName| ? { $_.name -eq $service+'.exe' } | % { $_.ConvertToDateTime( $_.CreationDate )}     
+				$Processuptime = (Get-Date) - $processTime
+				$DisplayprocessTime = "" + $Processuptime.Days + "d " + $Processuptime.Hours + "h " + $Processuptime.Minutes + "m" 
+				Write-Host Proces $service działa od $DisplayUptime              
+				Add-Content $report "<tr>"  
 				Add-Content $report "<td bgcolor= 'GainsBoro' align=center><B>$machineName</B></td>"  
 				Add-Content $report "<td bgcolor= 'GainsBoro' align=center><B>$svcName</B></td>" 
-                Add-Content $report "<td bgcolor= 'GainsBoro' align=center>  <B>$processTime</B></td>"
-                Add-Content $report "<td bgcolor= 'GainsBoro' align=center>  <B>$DisplayprocessTime</B></td>"
-                Add-Content $report "<td bgcolor= '$memColor' align=center>  <B>$mem</B></td>"  
-                Add-Content $report "<td bgcolor= 'Aquamarine' align=center><B>Running</B></td>"   
+				Add-Content $report "<td bgcolor= 'GainsBoro' align=center>  <B>$processTime</B></td>"
+				Add-Content $report "<td bgcolor= 'GainsBoro' align=center>  <B>$DisplayprocessTime</B></td>"
+				Add-Content $report "<td bgcolor= '$memColor' align=center>  <B>$mem</B></td>"  
+				Add-Content $report "<td bgcolor= 'Aquamarine' align=center><B>Running</B></td>"   
 				Add-Content $report "</tr>" 
-                Write-Host 'Uruchomiony od: '$processTime
-                Write-Host 'Wykorzystuje' $mem 'MB pamięci'
+				Write-Host 'Uruchomiony od: '$processTime
+				Write-Host 'Wykorzystuje' $mem 'MB pamięci'
 			} 
 			else  
             {  
@@ -211,21 +203,19 @@ $test = 'notok'
 		}  
 	}
 }
-
 #Funkcja na potrzeby monitorowania serwera strike pod sql
 function Check-ServiceStatusDB ($computers, $serviceslist) 
 { 
 	foreach ($machineName in $computers)  
-		{  
+	{  
 		foreach ($service in $serviceslist) 
 		{ 
-write-host $service $machineName
+			write-host $service $machineName
 			$serviceStatus = Get-Process $service  -ComputerName $machineName
             $svcName = $serviceStatus.name  
 			if ($serviceStatus)
-			{ 
-                
-                $mem = [Math]::Round($serviceStatus.PrivateMemorySize64 / 1mb, 2) 
+			{  
+				$mem = [Math]::Round($serviceStatus.PrivateMemorySize64 / 1mb, 2) 
                 if($mem -gt 8000)
                 {
                     $memColor = $orangeColor
@@ -235,7 +225,6 @@ write-host $service $machineName
                     $memColor = "Aquamarine"
                 }
 				Write-Host $machineName `t $serviceStatus.name `t $serviceStatus.status -ForegroundColor Green  
-				
 				$svcState = $serviceStatus.status  
                 $processTime = Get-WmiObject win32_process -computername $machineName| ? { $_.name -eq $service+'.exe' } | % { $_.ConvertToDateTime( $_.CreationDate )}     
 				Add-Content $report "<tr>"  
@@ -289,15 +278,15 @@ function Check-DiskStatus ($computers)
 			{ 
 				$color = $redColor 
 				$dataRow = "
-				        <tr bgcolor= 'GainsBoro'font face='tahoma'>
-				        <td width='10%'  bgcolor= 'GainsBoro' align='center'><b>$computer</b></td>
-				        <td width='5%'  bgcolor= 'GainsBoro' align='center'><b>$deviceID</b></td>
-				        <td width='15%'  bgcolor= 'GainsBoro' align='center'><b>$volName</b></td>
-				        <td width='10%'   bgcolor= 'GainsBoro' align='center'><b>$sizeGB</b></td>
-				        <td width='10%'  bgcolor= 'GainsBoro' align='center'><b>$usedSpaceGB</b></td>
-				        <td width='10%'  bgcolor= 'GainsBoro' align='center'><b>$freeSpaceGB</b></td>
-				        <td width='5%' bgcolor=`'$color`' align='center'><b>$percentFree</b></td>
-				        </tr>"
+				<tr bgcolor= 'GainsBoro'font face='tahoma'>
+				<td width='10%'  bgcolor= 'GainsBoro' align='center'><b>$computer</b></td>
+				<td width='5%'  bgcolor= 'GainsBoro' align='center'><b>$deviceID</b></td>
+				<td width='15%'  bgcolor= 'GainsBoro' align='center'><b>$volName</b></td>
+				<td width='10%'   bgcolor= 'GainsBoro' align='center'><b>$sizeGB</b></td>
+				<td width='10%'  bgcolor= 'GainsBoro' align='center'><b>$usedSpaceGB</b></td>
+				<td width='10%'  bgcolor= 'GainsBoro' align='center'><b>$freeSpaceGB</b></td>
+				<td width='5%' bgcolor=`'$color`' align='center'><b>$percentFree</b></td>
+		        </tr>"
 				Add-Content $report $dataRow;
 				Write-Host -ForegroundColor White "$computer $deviceID percentage free space = $percentFree";
 			}
@@ -305,15 +294,15 @@ function Check-DiskStatus ($computers)
 				{ 
 					$color = $orangeColor 
 					$dataRow = "
-				        <tr bgcolor= 'GainsBoro'font face='tahoma'>
-				        <td width='10%'  bgcolor= 'GainsBoro' align='center'><b>$computer</b></td>
-				        <td width='5%'  bgcolor= 'GainsBoro' align='center'><b>$deviceID</b></td>
-				        <td width='15%'  bgcolor= 'GainsBoro' align='center'><b>$volName</b></td>
-				        <td width='10%'   bgcolor= 'GainsBoro' align='center'><b>$sizeGB</b></td>
-				        <td width='10%'  bgcolor= 'GainsBoro' align='center'><b>$usedSpaceGB</b></td>
-				        <td width='10%'  bgcolor= 'GainsBoro' align='center'><b>$freeSpaceGB</b></td>
-				        <td width='5%' bgcolor=`'$color`' align='center'><b>$percentFree</b></td>
-				        </tr>"
+				    <tr bgcolor= 'GainsBoro'font face='tahoma'>
+				    <td width='10%'  bgcolor= 'GainsBoro' align='center'><b>$computer</b></td>
+				    <td width='5%'  bgcolor= 'GainsBoro' align='center'><b>$deviceID</b></td>
+				    <td width='15%'  bgcolor= 'GainsBoro' align='center'><b>$volName</b></td>
+				    <td width='10%'   bgcolor= 'GainsBoro' align='center'><b>$sizeGB</b></td>
+				    <td width='10%'  bgcolor= 'GainsBoro' align='center'><b>$usedSpaceGB</b></td>
+				    <td width='10%'  bgcolor= 'GainsBoro' align='center'><b>$freeSpaceGB</b></td>
+				    <td width='5%' bgcolor=`'$color`' align='center'><b>$percentFree</b></td>
+				    </tr>"
 					Add-Content $report $dataRow;
 					Write-Host -ForegroundColor White "$computer $deviceID percentage free space = $percentFree";
 				}
@@ -341,12 +330,12 @@ function Check-DiskStatus ($computers)
 function Add-Legenda
 {
 	$tableDescription = "
-		</table><br><table width='60%'>
-		<tr bgcolor='White'>
-		<td width='20%' align='center' bgcolor='$greenColor'>Stan Normalny - ponad 20% wolnego miejsca</td>
-		<td width='20%' align='center' bgcolor='$orangeColor'>Stan Ostrzegawczy - poniżej 20% wolnego miejsca</td>
-		<td width='20%' align='center' bgcolor='$redColor'>Stan Krytyczny - poniżej 10% wolnego miejsca</td>
-		</tr>"
+	</table><br><table width='60%'>
+	<tr bgcolor='White'>
+	<td width='20%' align='center' bgcolor='$greenColor'>Stan Normalny - ponad 20% wolnego miejsca</td>
+	<td width='20%' align='center' bgcolor='$orangeColor'>Stan Ostrzegawczy - poniżej 20% wolnego miejsca</td>
+	<td width='20%' align='center' bgcolor='$redColor'>Stan Krytyczny - poniżej 10% wolnego miejsca</td>
+	</tr>"
 	Add-Content $report $tableDescription
 	Add-Content $report "</body></html>"
 }
