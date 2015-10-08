@@ -28,7 +28,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="update_Contactis.ps1" />
+    <Compile Include="Create-DailyReport.ps1" />
+    <Compile Include="Update-Contactis.ps1" />
+    <Compile Include="Create-UpdatePaths.ps1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ContentForMail\" />
+    <Folder Include="Paths\" />
+    <Folder Include="Stuff\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="Build" />
