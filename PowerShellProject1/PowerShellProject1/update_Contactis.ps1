@@ -11,7 +11,7 @@ $UpdateExclude = ( '*.config','*.cfg')
 
 function Test-Administrator  
 {  
-	Write-Host "Administrator startus checking..."
+	Write-Host "Administrator startus checking.."
     $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
     if ($isAdmin)
     {
